@@ -17,17 +17,7 @@ public class BeginnerAgent extends  Agent{
         char info = probe(this.currentX, this.currentY);
         if (info == '0') { // recursively probe all safe cells
             // first get all the neighbours of the current cell
-            addCellstoProbeQueue();
-
-            while (!cellsToProbe.isEmpty()) {
-                int[] coord = cellsToProbe.remove(0);
-                this.currentX = coord[0];
-                this.currentY = coord[1];
-                info = probe(this.currentX,this.currentY);
-                if (info == '0') {
-                    addCellstoProbeQueue();
-                }
-            }
+            recursivelyUnprobeZeros(info);
         }
         //not '0' apply point strategy
 
@@ -43,17 +33,7 @@ public class BeginnerAgent extends  Agent{
                 if (info == '0') {
                     this.currentX = unprobedCell[0];
                     this.currentY = unprobedCell[1];
-                    addCellstoProbeQueue();
-
-                    while (!cellsToProbe.isEmpty()) {
-                        int[] coord = cellsToProbe.remove(0);
-                        this.currentX = coord[0];
-                        this.currentY = coord[1];
-                        info = probe(this.currentX,this.currentY);
-                        if (info == '0') {
-                            addCellstoProbeQueue();
-                        }
-                    }
+                    recursivelyUnprobeZeros(info);
                 }
                 continue;
             }
@@ -67,17 +47,7 @@ public class BeginnerAgent extends  Agent{
                     if (info == '0') {
                         this.currentX = unprobedCell[0];
                         this.currentY = unprobedCell[1];
-                        addCellstoProbeQueue();
-
-                        while (!cellsToProbe.isEmpty()) {
-                            int[] coord = cellsToProbe.remove(0);
-                            this.currentX = coord[0];
-                            this.currentY = coord[1];
-                            info = probe(this.currentX,this.currentY);
-                            if (info == '0') {
-                                addCellstoProbeQueue();
-                            }
-                        }
+                        recursivelyUnprobeZeros(info);
                     }
                     break;
                 } else if (clues - flagsCount == unprobeUnflagCount) {
@@ -108,6 +78,20 @@ public class BeginnerAgent extends  Agent{
             game.printGameOutcome(this.loss);
         } else {
             System.out.println("Result: Agent not terminated");
+        }
+    }
+
+    private void recursivelyUnprobeZeros(char info) {
+        addCellstoProbeQueue();
+
+        while (!cellsToProbe.isEmpty()) {
+            int[] coord = cellsToProbe.remove(0);
+            this.currentX = coord[0];
+            this.currentY = coord[1];
+            info = probe(this.currentX,this.currentY);
+            if (info == '0') {
+                addCellstoProbeQueue();
+            }
         }
     }
 
