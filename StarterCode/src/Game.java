@@ -1,3 +1,5 @@
+import java.util.Vector;
+
 public class Game {
     private int size;
     private int numTornadoes;
@@ -9,6 +11,7 @@ public class Game {
     private char[][] map;
 
     private boolean loss;
+    private int numFlags;
 
     public Game(char[][] map) {
         this.map = map;
@@ -16,6 +19,7 @@ public class Game {
         this.numTornadoes = 0;
         this.cells = new Cell[size][size];
         this.numCellsProbed = 0;
+        this.numFlags = 0;
         this.gameState = new char[size][size];
 
         for (int i = 0; i < size; i++) {
@@ -46,9 +50,24 @@ public class Game {
     public Cell getCell(int x, int y) {
         return cells[x][y];
     }
+    public Cell getCell(int[] xy) {
+        return cells[xy[0]][xy[1]];
+    }
 
     public Cell[][] getCells() {
         return cells;
+    }
+
+    public Vector<int[]> getUnprobedUnFlaggedCells() {
+        Vector<int[]> unprobedUnflaggedcells = new Vector<>();
+        for(int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (!cells[x][y].isProbed() && !cells[x][y].isFlagged()) {
+                    unprobedUnflaggedcells.add(new int[]{x,y});
+                }
+            }
+        }
+        return unprobedUnflaggedcells;
     }
 
     public int getNumCellsProbed() {
@@ -67,6 +86,14 @@ public class Game {
         }
     }
 
+    public boolean hasFoundAllTornadoes() {
+        if (numFlags == numTornadoes) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void printGameOutcome(boolean loss) {
         if (loss) {
             System.out.println("Result: Agent dead: found mine");
@@ -79,7 +106,7 @@ public class Game {
         for (int x = 0; x < size; x++) { // rows of the board
             for (int y = 0; y < size; y++) { // columns of the board
                 // Check if the cell is not probed
-                if (!cells[x][y].isProbed()) {
+                if (!cells[x][y].isProbed() && !cells[x][y].isFlagged()) {
                     return new int[] { x, y };// Return the position of the first unprobed cell
                 }
             }
@@ -105,4 +132,19 @@ public class Game {
             return false; // loss => false
         }
     }
+
+    public void putFlag(int[] coord) {
+        int x = coord[0];
+        int y = coord[1];
+
+        numFlags += 1;
+        cells[x][y].setFlagged(true);
+        gameState[x][y] = '*';
+    }
+
+    public int[] center() {
+        return new int[]{size/2,size/2};
+    }
 }
+
+

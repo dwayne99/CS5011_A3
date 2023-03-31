@@ -4,7 +4,6 @@ import java.util.Vector;
 public class BasicAgent extends Agent {
 
 
-    private Vector<int[]> cellsToProbe = new Vector<>();
 
     public BasicAgent(Game game, int x, int y, boolean verbose) {
         super(game,x,y, verbose);
@@ -64,27 +63,4 @@ public class BasicAgent extends Agent {
 
     }
 
-    private void addCellstoProbeQueue() {
-        Vector<int[]> neighbours = getNeighbours();
-        for (int[] coord: neighbours) {
-            if (!containsArray(cellsToProbe, coord) && !game.getCell(coord[0], coord[1]).isProbed()) {
-                cellsToProbe.add(coord);
-            }
-        }
-    }
-
-    private char probe(int currentX, int currentY) {
-        char info = game.getCellState(this.currentX, this.currentY);
-        game.updateCells(currentX, currentY, info);
-        return info;
-    }
-
-    public static boolean containsArray(Vector<int[]> vec, int[] arr) {
-        for (int[] vecArr : vec) {
-            if (java.util.Arrays.equals(vecArr, arr)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

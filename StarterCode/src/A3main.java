@@ -24,15 +24,19 @@ public class A3main {
 		printBoard(p);
 		System.out.println("Start!");
 
+		Game game = new Game(p); // Create the game from the world map
 		switch (args[0]) {
 		case "P1":
 			//TODO: Part 1
-			Game game = new Game(p); // Create the game from the world map
 			BasicAgent basicAgent = new BasicAgent(game,0, 0, verbose); // create the agent and give it the game
 			basicAgent.playGame();
+			break;
 
 		case "P2":
 			//TODO: Part 2
+			BeginnerAgent beginnerAgent = new BeginnerAgent(game,0, 0, verbose); // create the agent and give it the game
+			beginnerAgent.playGame();
+			break;
 		case "P3":
 			//TODO: Part 3
 		case "P4":
