@@ -27,6 +27,10 @@ public class A3main {
 		switch (args[0]) {
 		case "P1":
 			//TODO: Part 1
+			Game game = new Game(p); // Create the game from the world map
+			BasicAgent basicAgent = new BasicAgent(game,0, 0, verbose); // create the agent and give it the game
+			basicAgent.playGame();
+
 		case "P2":
 			//TODO: Part 2
 		case "P3":
