@@ -13,7 +13,6 @@ public class BeginnerAgent extends  Agent{
     public void playGame() {
 
         // probe the initial cell
-        int[] centerxy = game.center();
         char info = probe(this.currentX, this.currentY);
         if (info == '0') { // recursively probe all safe cells
             // first get all the neighbours of the current cell
@@ -22,6 +21,22 @@ public class BeginnerAgent extends  Agent{
         //not '0' apply point strategy
         unprobedCells = game.getUnprobedUnFlaggedCells();
 
+        applySPS(info);
+
+        System.out.println("Final map");
+        displayGameState();
+
+        if (steps!= maxSteps) {
+            this.loss = !game.hasFoundAllTornadoes();
+            // print game outcome
+            game.printGameOutcome(this.loss);
+        } else {
+            System.out.println("Result: Agent not terminated");
+        }
+    }
+
+    private void applySPS(char info) {
+        int[] centerxy = game.center();
         while(!unprobedCells.isEmpty()) {
             int[] unprobedCell = unprobedCells.remove(0);
             if (java.util.Arrays.equals(unprobedCell, centerxy)) { // safe clue
@@ -63,17 +78,6 @@ public class BeginnerAgent extends  Agent{
             if (steps == maxSteps) {
                 break;
             }
-        }
-
-        System.out.println("Final map");
-        displayGameState();
-
-        if (steps!= maxSteps) {
-            this.loss = !game.hasFoundAllTornadoes();
-            // print game outcome
-            game.printGameOutcome(this.loss);
-        } else {
-            System.out.println("Result: Agent not terminated");
         }
     }
 
