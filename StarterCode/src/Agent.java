@@ -17,22 +17,6 @@ public class Agent {
         this.verbose = verbose;
     }
 
-//    public void probeCell(int x, int y) {
-//        // Probe the cell at (x,y)
-//        game.getCell(x, y).setProbed(true);
-//
-//        // Update the game state
-//        char info = game.getCell(x, y).getInfo();
-//        if (info == 't') {
-//            game.setGameState(x, y, 't');
-//            game.setNumTornadoes(game.getNumTornadoes() - 1);
-//        } else {
-//            game.setGameState(x, y, Character.forDigit(info, 10));
-//        }
-//
-//        game.setNumCellsProbed(game.getNumCellsProbed() + 1);
-//    }
-
     public void displayGameState() {
         A3main.printBoard(game.getGameState());
     }
@@ -64,6 +48,20 @@ public class Agent {
         char info = game.getCellState(x, y);
         game.updateCells(x, y, info);
         return info;
+    }
+
+    protected void recursivelyUnprobeZeros(char info) {
+        addCellstoProbeQueue();
+
+        while (!cellsToProbe.isEmpty()) {
+            int[] coord = cellsToProbe.remove(0);
+            this.currentX = coord[0];
+            this.currentY = coord[1];
+            info = probe(this.currentX,this.currentY);
+            if (info == '0') {
+                addCellstoProbeQueue();
+            }
+        }
     }
 
     protected static boolean containsArray(Vector<int[]> vec, int[] arr) {

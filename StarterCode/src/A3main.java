@@ -39,6 +39,9 @@ public class A3main {
 			break;
 		case "P3":
 			//TODO: Part 3
+			IntermediateAgent intermediateAgent = new IntermediateAgent(game,0, 0, verbose); // create the agent and give it the game
+			intermediateAgent.playGame();
+			break;
 		case "P4":
 			//TODO: Part 4
 		case "P5":

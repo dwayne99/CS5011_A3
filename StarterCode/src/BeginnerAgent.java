@@ -20,13 +20,9 @@ public class BeginnerAgent extends  Agent{
             recursivelyUnprobeZeros(info);
         }
         //not '0' apply point strategy
-
         unprobedCells = game.getUnprobedUnFlaggedCells();
 
         while(!unprobedCells.isEmpty()) {
-//            if (verbose) { // display initial state of the game
-//                displayGameState();
-//            }
             int[] unprobedCell = unprobedCells.remove(0);
             if (java.util.Arrays.equals(unprobedCell, centerxy)) { // safe clue
                 info = probe(unprobedCell[0], unprobedCell[1]);
@@ -81,19 +77,6 @@ public class BeginnerAgent extends  Agent{
         }
     }
 
-    private void recursivelyUnprobeZeros(char info) {
-        addCellstoProbeQueue();
-
-        while (!cellsToProbe.isEmpty()) {
-            int[] coord = cellsToProbe.remove(0);
-            this.currentX = coord[0];
-            this.currentY = coord[1];
-            info = probe(this.currentX,this.currentY);
-            if (info == '0') {
-                addCellstoProbeQueue();
-            }
-        }
-    }
 
     private void setFlag(int [] coord) {
         game.putFlag(coord);

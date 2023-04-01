@@ -33,20 +33,7 @@ public class BasicAgent extends Agent {
                 this.currentX = xyTopLeft[0];
                 this.currentY = xyTopLeft[1];
             } else { // if a '0' is encountered
-
-                // first get all the neighbours of the current cell
-                addCellstoProbeQueue();
-
-                while (!cellsToProbe.isEmpty()) {
-                    int[] coord = cellsToProbe.remove(0);
-                    this.currentX = coord[0];
-                    this.currentY = coord[1];
-                    info = probe(this.currentX,this.currentY);
-                    if (info == '0') {
-                        addCellstoProbeQueue();
-                    }
-
-                }
+                recursivelyUnprobeZeros(info);
             }
 
             if (verbose & !game.hasWon()) { // display initial state of the game
