@@ -1,6 +1,3 @@
-import java.awt.*;
-import java.util.Vector;
-
 public class BasicAgent extends Agent {
 
 
@@ -33,7 +30,7 @@ public class BasicAgent extends Agent {
                 this.currentX = xyTopLeft[0];
                 this.currentY = xyTopLeft[1];
             } else { // if a '0' is encountered
-                recursivelyUnprobeZeros(info);
+                recursivelyProbeZeros(info);
             }
 
             if (verbose & !game.hasWon()) { // display initial state of the game

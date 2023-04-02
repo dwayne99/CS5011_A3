@@ -16,8 +16,18 @@ public class BeginnerAgent extends  Agent{
         char info = probe(this.currentX, this.currentY);
         if (info == '0') { // recursively probe all safe cells
             // first get all the neighbours of the current cell
-            recursivelyUnprobeZeros(info);
+            recursivelyProbeZeros(info);
         }
+
+        // probe center cell
+        int[] centerxy = game.center();
+        info = probe(centerxy[0], centerxy[1]);
+        if (info == '0') {
+            this.currentX = centerxy[0];
+            this.currentY = centerxy[1];
+            recursivelyProbeZeros(info);
+        }
+
         //not '0' apply point strategy
         unprobedCells = game.getUnprobedUnFlaggedCells();
 
@@ -36,18 +46,8 @@ public class BeginnerAgent extends  Agent{
     }
 
     private void applySPS(char info) {
-        int[] centerxy = game.center();
         while(!unprobedCells.isEmpty()) {
             int[] unprobedCell = unprobedCells.remove(0);
-            if (java.util.Arrays.equals(unprobedCell, centerxy)) { // safe clue
-                info = probe(unprobedCell[0], unprobedCell[1]);
-                if (info == '0') {
-                    this.currentX = unprobedCell[0];
-                    this.currentY = unprobedCell[1];
-                    recursivelyUnprobeZeros(info);
-                }
-                continue;
-            }
             Vector<int[]> probedNeighbours = getProbedNeighbours(unprobedCell);
             for (int[] probedNeighbour: probedNeighbours) {
                 int clues = Character.getNumericValue(game.getCell(probedNeighbour).getInfo());
@@ -58,7 +58,7 @@ public class BeginnerAgent extends  Agent{
                     if (info == '0') {
                         this.currentX = unprobedCell[0];
                         this.currentY = unprobedCell[1];
-                        recursivelyUnprobeZeros(info);
+                        recursivelyProbeZeros(info);
                     }
                     break;
                 } else if (clues - flagsCount == unprobeUnflagCount) {
@@ -82,9 +82,6 @@ public class BeginnerAgent extends  Agent{
     }
 
 
-    private void setFlag(int [] coord) {
-        game.putFlag(coord);
-    }
 
     private int getUnprobedUnflagCount(int[] probedNeighbour) {
         int unprobedUnflagCount = 0;
@@ -117,19 +114,4 @@ public class BeginnerAgent extends  Agent{
         return neighbourFlagsCount;
     }
 
-    private Vector<int[]> getProbedNeighbours(int[] unprobedCell) {
-        Vector<int[]> probedNeighbours = new Vector<>();
-        int[][] directions = {{-1,-1}, {-1,0}, {0,-1}, {0,1}, {1,0}, {1,1}};
-        for (int i = 0; i < 6; i++) {
-            int newX = unprobedCell[0] + directions[i][0];
-            int newY = unprobedCell[1] + directions[i][1];
-            if (newX >= 0 && newX < game.getSize() && newY >= 0 && newY < game.getSize()) {
-                int[] neighbour = {newX, newY};
-                if (game.getCell(neighbour[0],neighbour[1]).isProbed()) {
-                    probedNeighbours.add(neighbour);
-                }
-            }
-        }
-        return probedNeighbours;
-    }
 }

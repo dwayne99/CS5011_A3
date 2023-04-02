@@ -16,5 +16,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="antlr-runtime-4.9.3" level="project" />
+    <orderEntry type="library" name="org.sat4j.core" level="project" />
   </component>
 </module>

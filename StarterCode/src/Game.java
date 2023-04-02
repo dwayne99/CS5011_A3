@@ -145,6 +145,30 @@ public class Game {
     public int[] center() {
         return new int[]{size/2,size/2};
     }
+
+    public Vector<Cell> getProbedCells() {
+        Vector<Cell> probedCells = new Vector<>();
+        for (int i = 0; i < size; i++) {
+            for (int j =0; j < size; j++) {
+                if (cells[i][j].isProbed()) {
+                    probedCells.add(cells[i][j]);
+                }
+            }
+        }
+        return probedCells;
+    }
+
+    public Vector<Cell> getUnmarkedCells() {
+        Vector<Cell> unmarkedCells = new Vector<>();
+        for (int i = 0; i < size; i++) {
+            for (int j =0; j < size; j++) {
+                if (!cells[i][j].isProbed() && !cells[i][j].isFlagged()) {
+                    unmarkedCells.add(cells[i][j]);
+                }
+            }
+        }
+        return unmarkedCells;
+    }
 }
 
 

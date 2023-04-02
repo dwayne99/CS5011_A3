@@ -35,6 +35,20 @@ public class Agent {
         return neighbours;
     }
 
+    public Vector<int[]> getNeighbours(int X, int Y) {
+        Vector<int[]> neighbours = new Vector<>();
+        int[][] directions = {{-1,-1}, {-1,0}, {0,-1}, {0,1}, {1,0}, {1,1}};
+        for (int i = 0; i < 6; i++) {
+            int newX = X + directions[i][0];
+            int newY = Y + directions[i][1];
+            if (newX >= 0 && newX < game.getSize() && newY >= 0 && newY < game.getSize()) {
+                int[] neighbour = {newX, newY};
+                neighbours.add(neighbour);
+            }
+        }
+        return neighbours;
+    }
+
     protected void addCellstoProbeQueue() {
         Vector<int[]> neighbours = getNeighbours();
         for (int[] coord: neighbours) {
@@ -50,7 +64,7 @@ public class Agent {
         return info;
     }
 
-    protected void recursivelyUnprobeZeros(char info) {
+    protected void recursivelyProbeZeros(char info) {
         addCellstoProbeQueue();
 
         while (!cellsToProbe.isEmpty()) {
@@ -64,6 +78,7 @@ public class Agent {
         }
     }
 
+
     protected static boolean containsArray(Vector<int[]> vec, int[] arr) {
         for (int[] vecArr : vec) {
             if (java.util.Arrays.equals(vecArr, arr)) {
@@ -71,5 +86,25 @@ public class Agent {
             }
         }
         return false;
+    }
+
+    protected void setFlag(int [] coord) {
+        game.putFlag(coord);
+    }
+
+    protected Vector<int[]> getProbedNeighbours(int[] unprobedCell) {
+        Vector<int[]> probedNeighbours = new Vector<>();
+        int[][] directions = {{-1,-1}, {-1,0}, {0,-1}, {0,1}, {1,0}, {1,1}};
+        for (int i = 0; i < 6; i++) {
+            int newX = unprobedCell[0] + directions[i][0];
+            int newY = unprobedCell[1] + directions[i][1];
+            if (newX >= 0 && newX < game.getSize() && newY >= 0 && newY < game.getSize()) {
+                int[] neighbour = {newX, newY};
+                if (game.getCell(neighbour[0],neighbour[1]).isProbed()) {
+                    probedNeighbours.add(neighbour);
+                }
+            }
+        }
+        return probedNeighbours;
     }
 }
