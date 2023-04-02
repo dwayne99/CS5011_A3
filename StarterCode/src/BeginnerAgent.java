@@ -9,7 +9,7 @@ import java.util.Vector;
 public class BeginnerAgent extends  Agent{
 
     private int steps = 0;
-    private int maxSteps = 500; // used to determine if the agent is stuck in a loop
+    private int maxSteps = 100; // used to determine if the agent is stuck in a loop
     Vector<int[]> unprobedCells = new Vector<>();
 
     /**
