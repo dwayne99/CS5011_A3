@@ -1,3 +1,13 @@
+/**
+ * IntermediateAgent is a Tornado sweeper game-playing agent that uses a combination of
+ * SPS and a SAT-based solver to determine which cells to probe and flag in order
+ * to win the game.
+ *
+ * This class uses the following external libraries:
+ *  - org.logicng:logicng (v2.0.0)
+ *
+ */
+
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
@@ -8,18 +18,28 @@ import org.logicng.solvers.SATSolver;
 
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.concurrent.TimeoutException;
 
 public class IntermediateAgent extends Agent {
-    String kbString;
-    Vector<Cell> unmarkedCells = new Vector<>();
+    String knowledgeString; // the representation of the world with clues to be processed by a SAT solver
+    Vector<Cell> unmarkedCells = new Vector<>(); // Vector of all cells that are covered or unflagged
     int steps;
     int maxSteps = 100;
 
+    /**
+     * Constructor for creating an instance of IntermediateAgent.
+     *
+     * @param game    The Tornado sweeper game instance to be played.
+     * @param startX  The x-coordinate of the starting cell to probe.
+     * @param startY  The y-coordinate of the starting cell to probe.
+     * @param verbose A boolean flag that indicates whether to display verbose output during game play.
+     */
     public IntermediateAgent(Game game, int startX, int startY, boolean verbose) {
         super(game, startX, startY, verbose);
     }
 
+    /**
+     * Method that plays the game with both the SATS and SPS
+     */
     public void playGame() {
 
         // probe the initial cell
@@ -39,12 +59,13 @@ public class IntermediateAgent extends Agent {
             recursivelyProbeZeros(info);
         }
 
-//        displayGameState();
-
         useSat();
-
-
     }
+
+    /**
+     * this applies the SPS to a given unprobed cell
+     * @param unprobedCell
+     */
     private void applySPS(int[] unprobedCell) {
 
         Vector<int[]> probedNeighbours = getProbedNeighbours(unprobedCell);
@@ -59,7 +80,7 @@ public class IntermediateAgent extends Agent {
                     this.currentY = unprobedCell[1];
                     recursivelyProbeZeros(info);
                 }
-                updateKB();
+                updateKnowledgeBase();
                 break;
             } else if (clues - flagsCount == unprobeUnflagCount) {
                 setFlag(unprobedCell);
@@ -71,12 +92,15 @@ public class IntermediateAgent extends Agent {
 
     }
 
+    /**
+     * Use the SATS
+     */
     private void useSat() {
 
         FormulaFactory f = new FormulaFactory();
         PropositionalParser p = new PropositionalParser(f);
 
-        updateKB();
+        updateKnowledgeBase();
         // Get a list of all unmarked cells
         unmarkedCells = game.getUnmarkedCells();
 
@@ -88,29 +112,31 @@ public class IntermediateAgent extends Agent {
                 if (!unmarked.isProbed() && !unmarked.isFlagged()) {
 
                     try {
-                        Formula formula = p.parse(kbString + "&T" + Integer.toString(unmarked.getX()) + Integer.toString(unmarked.getY()));
+                        // create the knowledge string with the addition of the unmarked or unflagged cell
+                        Formula formula = p.parse(knowledgeString + "&T" + Integer.toString(unmarked.getX()) + Integer.toString(unmarked.getY()));
                         final SATSolver miniSat = MiniSat.miniSat(f);
                         miniSat.add(formula);
                         final Tristate result = miniSat.sat();
 
+                        // on the basis of the outcome of the solver perform either of the three actions
                         switch (result) {
                             case TRUE:
                                 applySPS(new int[]{unmarked.getX(), unmarked.getY()});
-                                updateKB();
+                                updateKnowledgeBase();
                                 break;
                             case FALSE:
+                                // no tornado, cell is safe to probe
                                 this.currentX = unmarked.getX();
                                 this.currentY = unmarked.getY();
                                 char info = probe(unmarked.getX(), unmarked.getY());
                                 if (info == '0') {
                                     recursivelyProbeZeros(info);
                                 }
-
-                                updateKB();
+                                updateKnowledgeBase();
                                 break;
                             case UNDEF:
                                 applySPS(new int[]{unmarked.getX(), unmarked.getY()});
-                                updateKB();
+                                updateKnowledgeBase();
 
                                 break;
                         }
@@ -124,6 +150,7 @@ public class IntermediateAgent extends Agent {
             }
             steps += 1;
             if (steps > maxSteps) {
+                // agent can't solve so exit the loop
                 break;
             }
         }
@@ -146,36 +173,40 @@ public class IntermediateAgent extends Agent {
 
     }
 
-    private void updateKB() {
+    /**
+     * After ever probe its necessary to add the new clues to the knowledge base.
+     * Hence update this function updates the knowledgebase
+     */
+    private void updateKnowledgeBase() {
         // get a list of all probed cells
         Vector<Cell> probedCells = game.getProbedCells();
 
         // Create the KB from the probed Cells
-        kbString = convertKB(probedCells);
+        knowledgeString = convertKB(probedCells);
     }
 
-    public ArrayList<ArrayList<String>> listPermutations(ArrayList<String> list) {
-
+    /**
+     *This method returns all permutations of a given ArrayList of strings.
+     * @param list the ArrayList of strings to be permuted
+     * @return an ArrayList of ArrayList of strings containing all possible permutations of the input list
+     */
+    public ArrayList<ArrayList<String>> makePermutations(ArrayList<String> list) {
         if (list.size() == 0) {
             ArrayList<ArrayList<String>> result = new ArrayList<>();
             result.add(new ArrayList<>());
             return result;
         }
-
-        ArrayList<ArrayList<String>> returnMe = new ArrayList<>();
-
+        ArrayList<ArrayList<String>> list2 = new ArrayList<>();
         String firstElement = list.remove(0);
-
-        ArrayList<ArrayList<String>> recursiveReturn = listPermutations(list);
+        ArrayList<ArrayList<String>> recursiveReturn = makePermutations(list);
         for (ArrayList<String> li : recursiveReturn) {
             for (int index = 0; index <= li.size(); index++) {
                 ArrayList<String> temp = new ArrayList<>(li);
                 temp.add(index, firstElement);
-                returnMe.add(temp);
+                list2.add(temp);
             }
-
         }
-        return returnMe;
+        return list2;
     }
 
     private int getCountNeighbourFlags(int[] probedNeighbour) {
@@ -193,59 +224,64 @@ public class IntermediateAgent extends Agent {
         }
         return neighbourFlagsCount;
     }
-    public String createClause(Cell cell) {
 
+    /**
+     *
+     * Constructs a clause from all the discovered cells surrounding the given cell.
+     * A clause is a disjunction of literals, where a literal is either a cell marked as danger,
+     * represented by "Txy"
+     * @param cell the cell for which the clause is being constructed
+     * @return a string representing the clause constructed from the discovered cells around the given cell
+     */
+    public String makeClause(Cell cell) {
         // get all the neighbours of the cell
         Vector<int[]> neighbours = getNeighbours(cell.getX(), cell.getY());
         // contains unknown neighbours of parameter cell
         ArrayList<Cell> unknownCells = new ArrayList<>();
         // contains marked neighbours of parameter cell
-        ArrayList<Cell> markedNeighbours = new ArrayList<>();
-        ArrayList<String> markedLiterals = new ArrayList<>();
+        ArrayList<Cell> flaggedNeighbours = new ArrayList<>();
+        ArrayList<String> flaggedLiterals = new ArrayList<>();
 
-        // populate the markedNeighbours and unknownCells lists
+        // add the flaggedNeighbours and unmarked unflagged cells lists
         for (int[] c : neighbours) {
             if (game.getCell(c[0],c[1]).isFlagged()) {
-                markedNeighbours.add(game.getCell(c[0],c[1]));
+                flaggedNeighbours.add(game.getCell(c[0],c[1]));
             } else if (!game.getCell(c[0],c[1]).isProbed()) {
                 unknownCells.add(game.getCell(c[0],c[1]));
             }
         }
 
-        // create the literals of each cell
+        // for each of the cell create a literal
         ArrayList<String> literals = new ArrayList<>();
         for (Cell unknownCell : unknownCells) {
             literals.add("T" + unknownCell.getX() + unknownCell.getY());
         }
-        for (Cell markedCell: markedNeighbours) {
-            markedLiterals.add("T" + markedCell.getX() + markedCell.getY());
+        for (Cell markedCell: flaggedNeighbours) {
+            flaggedLiterals.add("T" + markedCell.getX() + markedCell.getY());
         }
 
-        // number of neighbouring tornado cells
+        // get the clues on neighbouring tornadoes
         int nTornadoes = Character.getNumericValue(cell.getInfo());
-        // number of neighbouring cells that are unknown
-        int nUnknowns = unknownCells.size();
-        // number of neihbouring cells marked as dangers i.e. flagged
+        int nUnknowns = unknownCells.size(); // number of neighbouring cells that are unknown
+        // number of neihbouring cells marked as flagged
         int nMarked = getCountNeighbourFlags(new int[] {cell.getX(),cell.getY()});
 
-        // get all the permutations, to be used when adding the negation
-        ArrayList<ArrayList<String>> permutedClauses = listPermutations(literals);
-        for (int i = 0; i < permutedClauses.size(); i++) {
-            ArrayList<String> currentClause = permutedClauses.get(i);
-            // nUnknowns - nTornados - nMarked is the number of free/safe cells around cell
-            // used to get all possible scenarios
+        // generate all the permutations used for negation
+        ArrayList<ArrayList<String>> clauseCombinations = makePermutations(literals);
+        for (int i = 0; i < clauseCombinations.size(); i++) {
+            ArrayList<String> presentClause = clauseCombinations.get(i);
             for (int j = 0; j < nUnknowns - (nTornadoes - nMarked); j++) {
-                String clause = currentClause.get(j);
-                currentClause.remove(clause);
+                String clause = presentClause.get(j);
+                presentClause.remove(clause);
                 clause = "~" + clause;
-                currentClause.add(0, clause);
+                presentClause.add(0, clause);
             }
         }
 
         // build the logical formula string
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < permutedClauses.size(); i++) {
-            ArrayList<String> currentClause = permutedClauses.get(i);
+        for (int i = 0; i < clauseCombinations.size(); i++) {
+            ArrayList<String> currentClause = clauseCombinations.get(i);
             stringBuilder.append("(");
             for (int j = 0; j < currentClause.size(); j++) {
                 String clause = currentClause.get(j);
@@ -260,43 +296,34 @@ public class IntermediateAgent extends Agent {
 
         // delete trailing |
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-        return stringBuilder.toString();
 
+        String finalString =stringBuilder.toString();
+        return finalString;
     }
 
-    private int getUnprobedUnflagCount(int[] probedNeighbour) {
-        int unprobedUnflagCount = 0;
-        int[][] directions = {{-1,-1}, {-1,0}, {0,-1}, {0,1}, {1,0}, {1,1}};
-        for (int i = 0; i < 6; i++) {
-            int newX = probedNeighbour[0] + directions[i][0];
-            int newY = probedNeighbour[1] + directions[i][1];
-            if (newX >= 0 && newX < game.getSize() && newY >= 0 && newY < game.getSize()) {
-                int[] neighbour = {newX, newY};
-                if (!game.getCell(neighbour[0],neighbour[1]).isFlagged() && !game.getCell(neighbour[0],neighbour[1]).isProbed()) {
-                    unprobedUnflagCount += 1;
-                }
-            }
-        }
-        return unprobedUnflagCount;
-    }
 
     /**
-     *
-     * @param uncoveredCells: list of Cells that are probed
+     * Function that takes all uncovered cells and forms a knowledge base string
+     * from the discovered clues
+     * @param probedCells: list of Cells that are probed
      * @return
      */
-    public String convertKB(Vector<Cell> uncoveredCells) {
+    public String convertKB(Vector<Cell> probedCells) {
 
+        // instantiate a string builder for your knowledge string
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < uncoveredCells.size(); i++) {
-            Cell cell = uncoveredCells.get(i);
+        String finalString;
+        
+        // iterate over all probed cells
+        for (int i = 0; i < probedCells.size(); i++) {
+            Cell cell = probedCells.get(i);
             int[] coord = new int[] {cell.getX(), cell.getY()};
-            if (getUnprobedUnflagCount(coord) > 0) {
+            if (getUnprobedUnflagCount(coord) > 0) { // check if count of unmarked unflagged > 0
                 // for each cell, get a single clause
-                String clause = createClause(cell);
-                if (clause != "") {
+                String kClause = makeClause(cell); // clause for your Knowlegede base
+                if (kClause != "") {
                     stringBuilder.append("(");
-                    stringBuilder.append(clause);
+                    stringBuilder.append(kClause);
                     stringBuilder.append(")");
                     stringBuilder.append("&");
                 }
@@ -306,6 +333,8 @@ public class IntermediateAgent extends Agent {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
 
-        return stringBuilder.toString();
+        finalString = stringBuilder.toString();
+
+        return finalString;
     }
 }

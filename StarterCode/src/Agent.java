@@ -132,6 +132,27 @@ public class Agent {
     }
 
     /**
+     * Returns the count of all the cells that are not flagged and not probed
+     * @param probedNeighbour: the center cell for whose neighbours have to be investigated1
+     * @return
+     */
+    protected int getUnprobedUnflagCount(int[] probedNeighbour) {
+        int unprobedUnflagCount = 0;
+        int[][] directions = {{-1,-1}, {-1,0}, {0,-1}, {0,1}, {1,0}, {1,1}};
+        for (int i = 0; i < 6; i++) {
+            int newX = probedNeighbour[0] + directions[i][0];
+            int newY = probedNeighbour[1] + directions[i][1];
+            if (newX >= 0 && newX < game.getSize() && newY >= 0 && newY < game.getSize()) {
+                int[] neighbour = {newX, newY};
+                if (!game.getCell(neighbour[0],neighbour[1]).isFlagged() && !game.getCell(neighbour[0],neighbour[1]).isProbed()) {
+                    unprobedUnflagCount += 1;
+                }
+            }
+        }
+        return unprobedUnflagCount;
+    }
+
+    /**
      * Flags the specified cell on the game board.
      * @param coord the (x,y) coordinates of the cell to flag
      */
